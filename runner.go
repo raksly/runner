@@ -6,7 +6,7 @@ separate work. Imagine a server accepting http, tcp, and other protocols.
 You probably also create WaitGroups and/or channels to sync these goroutines.
 Runner does all that for you.
 
-For examples please view https://github.com/raksly/runner#Examples
+For examples please view https://github.com/raksly/runner#examples
 
 */
 package runner
