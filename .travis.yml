@@ -1,0 +1,8 @@
+language: go
+go:
+  - 1.7.x
+  - 1.8.x
+  - 1.9.x
+script:
+  - go run $GOPATH/src/github.com/raksly/runner/examples/minimalistic/main.go
+  - go run $GOPATH/src/github.com/raksly/runner/examples/exit_notification/main.go
