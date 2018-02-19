@@ -19,11 +19,9 @@ import (
 )
 
 // New creates a new Runner
+// Deprecated: Use runner.Runner{}
 func New(ctx context.Context) Runner {
-	return Runner{
-		ctx: ctx,
-		wg:  &sync.WaitGroup{},
-	}
+	return Runner{Ctx: ctx}
 }
 
 // Runner runs functions in goroutines with `Run`, `RunContext` and/or
@@ -31,13 +29,14 @@ func New(ctx context.Context) Runner {
 // exits.
 // You may wait on all goroutines to finish using `Wait`.
 type Runner struct {
-	ctx context.Context
-	wg  *sync.WaitGroup
+	// Ctx will be passed to functions called by `RunContext`
+	Ctx context.Context
+	wg  sync.WaitGroup
 }
 
 // Run runs a function of type func() in a new goroutine.
 // The returned channel is closed when f returns
-func (r Runner) Run(f func()) <-chan struct{} {
+func (r *Runner) Run(f func()) <-chan struct{} {
 	done := make(chan struct{})
 	r.wg.Add(1)
 	go func() {
@@ -51,31 +50,32 @@ func (r Runner) Run(f func()) <-chan struct{} {
 }
 
 // RunContext is like `Run`, but passes the context given to `New`.
-func (r Runner) RunContext(f func(context.Context)) <-chan struct{} {
-	return r.RunOtherContext(r.ctx, f)
+func (r *Runner) RunContext(f func(context.Context)) <-chan struct{} {
+	return r.RunOtherContext(r.Ctx, f)
 }
 
 // RunOtherContext is like `RunContext`, except you may specify which
 // context to be passed to f.
-func (r Runner) RunOtherContext(ctx context.Context, f func(context.Context)) <-chan struct{} {
+func (r *Runner) RunOtherContext(ctx context.Context, f func(context.Context)) <-chan struct{} {
 	return r.Run(func() { f(ctx) })
 }
 
 // RunSigs is a convenience method to work with OS signals.
 // Unlike the other `Run*` functions, the channel returned
 // is not closed, but reads the received signal.
-func (r Runner) RunSigs(sigs ...os.Signal) <-chan os.Signal {
+func (r *Runner) RunSigs(sigs ...os.Signal) <-chan os.Signal {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, sigs...)
 	return sig
 }
 
 // Wait waits for all goroutines started by this runner.
-func (r Runner) Wait() {
+func (r *Runner) Wait() {
 	r.wg.Wait()
 }
 
 // Context returns the context given to `New`.
-func (r Runner) Context() context.Context {
-	return r.ctx
+// Deprecated: Access Runner.Ctx directly.
+func (r *Runner) Context() context.Context {
+	return r.Ctx
 }

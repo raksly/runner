@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -21,10 +20,10 @@ func runHTTP() {
 }
 
 func main() {
-	runner := runner.New(context.Background())
+	var r runner.Runner
 
-	runner.Run(runHTTP)
-	runner.Run(runTCP)
+	r.Run(runHTTP)
+	r.Run(runTCP)
 
-	runner.Wait()
+	r.Wait()
 }
