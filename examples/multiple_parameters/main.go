@@ -16,15 +16,15 @@ func runSomething(ctx context.Context, a, b, c int) {
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	runner := runner.New(ctx)
+	r := runner.Runner{Ctx: ctx}
 
 	select {
-	case <-runner.Run(func() { runSomething(ctx, 1, 2, 3) }):
+	case <-r.Run(func() { runSomething(ctx, 1, 2, 3) }):
 		fmt.Println("Exited runSomething")
-	case sig := <-runner.RunSigs(syscall.SIGINT, syscall.SIGTERM):
+	case sig := <-r.RunSigs(syscall.SIGINT, syscall.SIGTERM):
 		fmt.Println("Received signal", sig)
-		cancel()
 	}
 
-	runner.Wait()
+	cancel()
+	r.Wait()
 }

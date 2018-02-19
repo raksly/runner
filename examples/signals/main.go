@@ -22,17 +22,17 @@ func runHTTP(ctx context.Context) {
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	runner := runner.New(ctx)
+	r := runner.Runner{Ctx: ctx}
 
 	select {
-	case <-runner.RunContext(runHTTP):
+	case <-r.RunContext(runHTTP):
 		fmt.Println("Exited runHTTP")
-	case <-runner.RunContext(runTCP):
+	case <-r.RunContext(runTCP):
 		fmt.Println("Exited runTCP")
-	case sig := <-runner.RunSigs(syscall.SIGINT, syscall.SIGTERM):
+	case sig := <-r.RunSigs(syscall.SIGINT, syscall.SIGTERM):
 		fmt.Println("Received signal", sig)
 	}
 
 	cancel()
-	runner.Wait()
+	r.Wait()
 }

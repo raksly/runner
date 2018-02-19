@@ -11,44 +11,44 @@ Documentation available on [GoDoc](https://godoc.org/github.com/raksly/runner).
 ## Examples
 ### Minimalistic
 ```golang
-runner := runner.New(context.Background())
+var r runner.Runner
 
-runner.Run(runHTTP)
-runner.Run(runTCP)
+r.Run(runHTTP)
+r.Run(runTCP)
 
-runner.Wait()
+r.Wait()
 ```
-`runHTTP` and `runTCP` are both of type `func()`. `runner.Run` will run both functions in separate goroutines, and `runner.Wait()` waits until both functions exit.
+`runHTTP` and `runTCP` are both of type `func()`. `r.Run` will run both functions in separate goroutines, and `r.Wait()` waits until both functions exit.
 ### Exit notification
 When `runTCP` exits, it might be because the application is supposed to exit alltogether, or there was an irrecoverable error. In that case, you might want HTTP to exit aswell. `Run*` methods return a channel which is closed when its running function returns.
 ```golang
 ctx, cancel := context.WithCancel(context.Background())
-runner := runner.New(ctx)
+r := runner.Runner{Ctx: ctx}
 
 select {
-case <-runner.RunContext(runHTTP):
-case <-runner.RunContext(runTCP):
+case <-r.RunContext(runHTTP):
+case <-r.RunContext(runTCP):
 }
 
 cancel()
-runner.Wait()
+r.Wait()
 ```
 Both `runHTTP` and `runTCP` are now of type `func(context.Context)` and 
-are given the context passed to `runner.New`. If either `runHTTP` or `runTCP` returns, `select` will break, the context will be cancelled, making the other function exit aswell in due time, and `runner.Wait()` waits for that.
+are given the context `Runner.Ctx`. If either `runHTTP` or `runTCP` returns, `select` will break, the context will be cancelled, making the other function exit aswell in due time, and `r.Wait()` waits for that.
 ### Signals
 `Runner` contains a convenience method to work with OS signals
 ```golang
 ctx, cancel := context.WithCancel(context.Background())
-runner := runner.New(ctx)
+r := runner.Runner{Ctx: ctx}
 
 select {
-case <-runner.RunContext(runHTTP):
-case <-runner.RunContext(runTCP):
-case <-runner.RunSigs(syscall.SIGINT, syscall.SIGTERM):
+case <-r.RunContext(runHTTP):
+case <-r.RunContext(runTCP):
+case <-r.RunSigs(syscall.SIGINT, syscall.SIGTERM):
 }
 
 cancel()
-runner.Wait()
+r.Wait()
 ```
 If either `runHTTP` or `runTCP` returns, or `SIGINT`/`SIGTERM` is received,
 the context will be cancelled and we wait for everything to clean up.
@@ -57,16 +57,15 @@ You might want to pass more than just a context to your function. To archive
 this, you may use closures
 ```golang
 ctx, cancel := context.WithCancel(context.Background())
-runner := runner.New(ctx)
+r := runner.Runner{Ctx: ctx}
 
 select {
-// runSomething blocks on <-ctx.Done()
-case <-runner.Run(func() { runSomething(ctx, 1, 2, 3) }):
-case <-runner.RunSigs(syscall.SIGINT, syscall.SIGTERM):
-    cancel()
+case <-r.Run(func() { runSomething(ctx, 1, 2, 3) }):
+case <-r.RunSigs(syscall.SIGINT, syscall.SIGTERM):
 }
 
-runner.Wait()
+cancel()
+r.Wait()
 ```
 ## License
 MIT
