@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/raksly/runner.svg?branch=master)](https://travis-ci.org/raksly/runner)
 Runner helps you to not reinvent the wheel on certain type of applications.
 Often you begin your application by starting multiple goroutines to do
 separate work. Imagine a server accepting http, tcp, and other protocols.
