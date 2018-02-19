@@ -18,7 +18,7 @@ r.Run(runTCP)
 
 r.Wait()
 ```
-`runHTTP` and `runTCP` are both of type `func()`. `runner.Run` will run both functions in separate goroutines, and `runner.Wait()` waits until both functions exit.
+`runHTTP` and `runTCP` are both of type `func()`. `r.Run` will run both functions in separate goroutines, and `r.Wait()` waits until both functions exit.
 ### Exit notification
 When `runTCP` exits, it might be because the application is supposed to exit alltogether, or there was an irrecoverable error. In that case, you might want HTTP to exit aswell. `Run*` methods return a channel which is closed when its running function returns.
 ```golang
@@ -34,7 +34,7 @@ cancel()
 r.Wait()
 ```
 Both `runHTTP` and `runTCP` are now of type `func(context.Context)` and 
-are given the context passed to `runner.New`. If either `runHTTP` or `runTCP` returns, `select` will break, the context will be cancelled, making the other function exit aswell in due time, and `runner.Wait()` waits for that.
+are given the context `Runner.Ctx`. If either `runHTTP` or `runTCP` returns, `select` will break, the context will be cancelled, making the other function exit aswell in due time, and `r.Wait()` waits for that.
 ### Signals
 `Runner` contains a convenience method to work with OS signals
 ```golang
